@@ -26,6 +26,9 @@ typedef enum {
     TX_TASK_RX_PARAM_SET,
     TX_TASK_PARAM_STORE,
     TX_TASK_PARAM_RELOAD,
+    TX_TASK_PARAM_DEFAULTS, // loads the defaults, stores them, and restarts the controller
+    // note: mavlink's task_pending_mask is a uint16_t and holds bits for RX_PARAM_SET and PARAM_STORE,
+    // so new tasks must be added behind them
 
     TX_TASK_FLASH_ESP,
     TX_TASK_ESP_PASSTHROUGH,
