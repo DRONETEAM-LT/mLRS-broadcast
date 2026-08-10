@@ -34,6 +34,7 @@ class tTxDisp
 #include "../Common/thirdparty/gfxfontFreeMono9pt7b.h"
 #include "../Common/thirdparty/gdisp.h"
 #include "../Common/thirdparty/mlrs-logo.h"
+#include "../../LAS/las_splash.h"
 #include "../Common/tasks.h"
 
 
@@ -705,9 +706,15 @@ void tTxDisp::draw_page_startup(void)
     gdisp_setcurY(48); gdisp_puts_XCentered(DEVICE_NAME);
     gdisp_setcurY(60); gdisp_puts_XCentered(VERSIONONLYSTR);
 */
-    gdisp_drawbitmap(23, 0, mlrs_logo_91x38_bw, 91, 38, 1);
-    gdisp_setcurY(52); gdisp_puts_XCentered(DEVICE_NAME);
-    gdisp_setcurY(63); gdisp_puts_XCentered(VERSIONONLYSTR);
+    /*
+     * One full-panel bitmap: wordmark on the left, symbol on the right and the
+     * mLRS credit along the bottom, all pre-rendered by /LAS/las_splash_generate.py.
+     * Drawn as artwork rather than with the display fonts so the letterforms
+     * are exactly the brand's - in particular "A SKY" is hollow, which the
+     * built-in fonts cannot do. DEVICE_NAME and the version are not repeated
+     * here; they stay on the Main/4 page.
+     */
+    gdisp_drawbitmap(0, 0, las_splash_128x64_bw, LAS_SPLASH_W, LAS_SPLASH_H, 1);
 }
 
 
