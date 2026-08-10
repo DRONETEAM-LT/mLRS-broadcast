@@ -490,9 +490,26 @@ void prepare_transmit_frame(uint8_t antenna, uint8_t fhss1_curr_i, uint8_t fhss2
 
         uint16_t to_read = sx_serial.bytes_available();
 
-        if (to_read > FRAME_TX_PAYLOAD_LEN)
+        /*
+         * Leave room for a partial magic match carried over from the previous
+         * slot. Those bytes were withheld while waiting to see whether the rest
+         * of the magic followed; if it did not, they are flushed into THIS
+         * frame, so this slot writes more bytes than it reads. Reading a full
+         * FRAME_TX_PAYLOAD_LEN on top of a pending prefix overruns payload[],
+         * and the bounded writes below then discard the surplus - silently
+         * losing a byte from the middle of the serial stream, which corrupts one
+         * MAVLink message. Whatever is not read now stays buffered for the next
+         * slot, so reading less costs nothing.
+         */
+        uint16_t read_max = FRAME_TX_PAYLOAD_LEN;
+        if (hs_state == HS_MATCHING)
         {
-            to_read = FRAME_TX_PAYLOAD_LEN;
+            read_max -= hs_pos; /* hs_pos < LORA_MAGIC_LEN, so this cannot wrap */
+        }
+
+        if (to_read > read_max)
+        {
+            to_read = read_max;
         }
 
         for (uint16_t i = 0U; i < to_read; i++)
