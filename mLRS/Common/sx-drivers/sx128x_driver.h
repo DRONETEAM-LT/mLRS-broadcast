@@ -23,16 +23,29 @@
 //-------------------------------------------------------
 
 const tSxLoraConfiguration Sx128xLoraConfiguration[] = {
+    // LAS: SF5 runs at coding rate 4/7 rather than 4/5, spending some of the
+    // spare slot time on forward error correction. 4/8 is NOT available with
+    // long interleaving on the SX1280 - the enum stops at CR_LI_4_7 - and long
+    // interleaving is worth keeping, since spreading the code over more symbols
+    // is what makes it resilient to the burst errors this link actually sees.
+    // The receiver (LAS_LORA, las_lora_radio.c) must match this exactly.
+    //
+    // TimeOverAir: at 4/5 the 7892us splits into 640us preamble + 7252us
+    // payload; only the coded part scales with the rate, so 640 + 7252*7/5 =
+    // 10793us, still 54% of the 20ms slot. It feeds only the background-task
+    // budget while transmitting (tWhileTransmit::dtmax_us), where an
+    // under-estimate is the safe direction, but keep it honest anyway.
     { .SpreadingFactor = SX1280_LORA_SF5,
       .Bandwidth = SX1280_LORA_BW_800,
-      .CodingRate = SX1280_LORA_CR_LI_4_5,
+      .CodingRate = SX1280_LORA_CR_LI_4_7,
       .PreambleLength = 12,
       .HeaderType = SX1280_LORA_HEADER_DISABLE,
       .PayloadLength = FRAME_TX_RX_LEN,
       .CrcEnabled = SX1280_LORA_CRC_DISABLE,
       .InvertIQ = SX1280_LORA_IQ_NORMAL,
-      .TimeOverAir = 7892,
-      .ReceiverSensitivity = -105,
+      .TimeOverAir = 10793,
+      .ReceiverSensitivity = -105, // now slightly pessimistic: more FEC buys a
+                                   // little sensitivity. Display-only value.
     },
     { .SpreadingFactor = SX1280_LORA_SF6,
       .Bandwidth = SX1280_LORA_BW_800,
